@@ -1,0 +1,7 @@
+torchvision
+numpy
+opencv-python
+scikit-image
+matplotlib
+#python -m pip install detectron2 -f https://dl.fbaipublicfiles.com/detectron2/wheels/cu102/torch1.10/index.html
+# use url as per your required env
