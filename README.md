@@ -25,4 +25,4 @@ usage: main.py [-r PATH] [-d PATH]
 
 ```bash
 python main.py -r ./images/rgb/file_name.png -d ./images/depth/file_name.png
-```
+
