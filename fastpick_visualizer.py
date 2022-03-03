@@ -104,8 +104,9 @@ class FastPickVisualizer(Visualizer):
             masks = [masks[idx] for idx in sorted_idxs] if masks is not None else None
             keypoints = keypoints[sorted_idxs] if keypoints is not None else None
 
-            # uz: override colors, remove boxes and labels
-            assigned_colors = [[1.0, 0.0, 0.0], [0.0, 1.0, 0.0],[1.0, 1.0, 0.0]]
+            # uz: override colors, remove boxes and labels, same color for both class (ripe and unripe)
+            assigned_colors = [[0.0, 1.0, 1.0], [0.0, 1.0, 1.0]]
+
             boxes           = None
             labels          = None
 
@@ -113,12 +114,7 @@ class FastPickVisualizer(Visualizer):
 
             #uz: assign colors according to label text from metadata
 
-            if "rigid" in org_labels[i]:
-                color = assigned_colors[0]
-            elif "canopy" in org_labels[i]:
-                color = assigned_colors[1]
-            elif "strawberry" in org_labels[i]:
-                color = assigned_colors[2]
+            color = assigned_colors[0]
             if boxes is not None:
                 self.draw_box(boxes[i], edge_color=color)
 
