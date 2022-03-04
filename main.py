@@ -6,6 +6,7 @@ Started by: Usman Zahidi (uz) {16/02/22}
 import sys, numpy as np, cv2,argparse,logging
 from masks_predictor import MasksPredictor, ClassNames
 import matplotlib.pyplot as plt
+from os import listdir
 
 
 parser = argparse.ArgumentParser(description="Test mask predictor")
@@ -14,46 +15,57 @@ parser.add_argument("-d", "--depth", default='', type=str, metavar="PATH", help=
 
 def call_predictor():
 
-    args = parser.parse_args()
+    #args = parser.parse_args()
 
-    if not args.rgb or not args.depth:
-        print ('wrong set of arguments');
-        return
+    #if not args.rgb or not args.depth:
+    #    print ('wrong set of arguments');
+    #    return
 
-    rgb_file    = args.rgb
-    depth_file  = args.depth
+    #rgb_file    = args.rgb
+    #depth_file  = args.depth
 
     model_file  = './model/fp_ss_model.pth'
     config_file = 'COCO-InstanceSegmentation/mask_rcnn_R_101_FPN_3x.yaml'
+    image_dir   ='./images/rgb/'
+    depth_dir = './images/depth/'
+    rgb_files=listdir(image_dir)
+    depth_files=listdir(depth_dir)
+    iter=1
 
-    rgb_image   = cv2.imread(rgb_file)
-    depth_image = cv2.imread(depth_file)
 
-    if rgb_image is None or depth_image is None:
-        message = 'path to rgb or depth image is invalid'
-        logging.error(message)
-        sys.exit(1)
+    for rgb_file,depth_file in zip(rgb_files,depth_files):
 
-    if rgb_image.shape != depth_image.shape:
-        message = 'rgb and depth image size mismatch'
-        logging.error(message)
-        sys.exit(1)
+        rgb_image   = cv2.imread(image_dir+rgb_file)
+        depth_image = cv2.imread(depth_dir+depth_file)
 
-    rgbd_image  = np.dstack((rgb_image,depth_image[:,:,0]))
+        if rgb_image is None or depth_image is None:
+            message = 'path to rgb or depth image is invalid'
+            logging.error(message)
+            sys.exit(1)
 
-    # list of classes for which depth masks are required, shouldn't be null, returns in the order supplied
-    class_list  = [ClassNames.STRAWBERRY,ClassNames.CANOPY,ClassNames.RIGID_STRUCT,ClassNames.BACKGROUND]
+        if rgb_image.shape != depth_image.shape:
+            message = 'rgb and depth image size mismatch'
+            logging.error(message)
+            sys.exit(1)
 
-    #instantiation
-    mask_pred   = MasksPredictor(model_file,config_file)
+        rgbd_image  = np.dstack((rgb_image,depth_image[:,:,0]))
 
-    # ** main call **
-    depth_masks = mask_pred.get_predictions(rgbd_image,class_list)
+        # list of classes for which depth masks are required, shouldn't be null, returns in the order supplied
+        class_list  = [ClassNames.STRAWBERRY,ClassNames.CANOPY,ClassNames.RIGID_STRUCT,ClassNames.BACKGROUND]
 
-    # next process depth_masks for creating otcomaps
+        #instantiation
+        mask_pred   = MasksPredictor(model_file,config_file)
 
-    # display for test only
-    display_masks(rgbd_image,depth_masks)
+        # ** main call **
+        depth_masks = mask_pred.get_predictions(rgbd_image,class_list)
+            #uncomment save_mask_images if wish to write segmented image
+            #save_mask_images(rgb_image,depth_masks,image_dir,rgb_file,iter)
+
+        # next process depth_masks for creating otcomaps
+
+        # display for test only
+        display_masks(rgbd_image,depth_masks)
+        iter += 1
 
 def display_masks(rgbd_image,depth_masks):
     # assuming depth_masks has all 4 masks for display,
@@ -88,6 +100,22 @@ def display_masks(rgbd_image,depth_masks):
     ax6.set_title("Background", fontsize=font_sz)
     ax6.imshow(depth_masks[:,:,3])
     plt.show()
+
+def save_mask_images(rgb_image,depth_masks,image_dir,file_name,iter):
+
+    yellow= depth_masks[:, :, 0].copy() * 255
+    blue  = depth_masks[:, :, 3].copy() * 255
+    green = depth_masks[:, :, 1].copy() * 255
+    red   = depth_masks[:, :, 2].copy() * 255
+
+    bgr_image = depth_masks[:, :, 0:3]
+    bgr_image[:, :, 0] = blue
+    bgr_image[:, :, 1] = green + yellow
+    bgr_image[:, :, 2] = red+ yellow
+    bgr_image=np.hstack([rgb_image, bgr_image])
+    #save image
+    prefix="%04d" % (iter,)
+    cv2.imwrite(image_dir+'/segmented_output/'+prefix+'_image.png', bgr_image)
 
 if __name__ == '__main__':
     #example call
