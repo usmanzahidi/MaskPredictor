@@ -24,43 +24,38 @@ from scipy import ndimage
 
 class MasksPredictor:
 
-    def __init__(self, model_file,config_file,num_classes=1, scale=1.0, instance_mode=ColorMode.SEGMENTATION):
+    def __init__(self, model_file,config_file,metadata_file,num_classes=1, scale=1.0, instance_mode=ColorMode.SEGMENTATION):
 
         self.instance_mode=instance_mode
         self.scale=scale
-        self.metadata=self.get_metadata()
+        self.metadata=self.get_metadata(metadata_file)
         cfg = self.init_config(model_file, config_file, num_classes)
 
         try:
             self.predictor=DefaultPredictor(cfg)
-        except:
-            message = f'{sys.exc_info()[0]} occured'
-            logging.error(message)
-            sys.exit(1)
+        except Exception as e:
+            logging.error(e)
 
     def init_config(self, model_file, config_file, num_classes=1):
         cfg = get_cfg()
         try:
             cfg.merge_from_file(model_zoo.get_config_file(config_file))
-        except:
-            message=f'{sys.exc_info()[0]} occured'
-            logging.error(message)
-            sys.exit(1)
+        except Exception as e:
+            logging.error(e)
+
 
         cfg.MODEL.WEIGHTS = os.path.join(model_file)
         cfg.MODEL.ROI_HEADS.NUM_CLASSES = num_classes  # 1.strawberry (only strawberry coming from model)
         return cfg
 
-    def get_metadata(self):
+    def get_metadata(self,metadata_file):
 
         #metadata file has name of classes, it is created to avoid having custom dataset and taking definitions
         # from annotations, instead. It has structure of MetaDataCatlog output of detectron2
         try:
-            file = open('./data/metadata.pkl', 'rb')
-        except:
-            message = f'{sys.exc_info()[0]} occured'
-            logging.error(message)
-            sys.exit(1)
+            file = open(metadata_file, 'rb')
+        except Exception as e:
+            logging.error(e)
 
         data = pickle.load(file)
         file.close()
@@ -70,7 +65,7 @@ class MasksPredictor:
 
         if (bool(class_list)==False):
             logging.error('class list empty')
-            sys.exit(1)
+
 
         depth_image = rgbd_image[:, :, 3]
         rgb_image=rgbd_image[:, :, :3]
