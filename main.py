@@ -26,13 +26,14 @@ def call_predictor():
 
     model_file  = './model/fp_ss_model.pth'
     config_file = 'COCO-InstanceSegmentation/mask_rcnn_R_101_FPN_3x.yaml'
+    metadata_file ='./data/metadata.pkl'
     image_dir   ='./images/rgb/'
     depth_dir = './images/depth/'
     rgb_files=listdir(image_dir)
     depth_files=listdir(depth_dir)
     iter=1
 
-
+    #loop for generating/saving segmentation output images
     for rgb_file,depth_file in zip(rgb_files,depth_files):
 
         rgb_image   = cv2.imread(image_dir+rgb_file)
@@ -41,12 +42,12 @@ def call_predictor():
         if rgb_image is None or depth_image is None:
             message = 'path to rgb or depth image is invalid'
             logging.error(message)
-            sys.exit(1)
+
 
         if rgb_image.shape != depth_image.shape:
             message = 'rgb and depth image size mismatch'
             logging.error(message)
-            sys.exit(1)
+
 
         rgbd_image  = np.dstack((rgb_image,depth_image[:,:,0]))
 
@@ -54,12 +55,12 @@ def call_predictor():
         class_list  = [ClassNames.STRAWBERRY,ClassNames.CANOPY,ClassNames.RIGID_STRUCT,ClassNames.BACKGROUND]
 
         #instantiation
-        mask_pred   = MasksPredictor(model_file,config_file)
+        mask_pred   = MasksPredictor(model_file,config_file,metadata_file)
 
         # ** main call **
         depth_masks = mask_pred.get_predictions(rgbd_image,class_list)
-            #uncomment save_mask_images if wish to write segmented image
-            #save_mask_images(rgb_image,depth_masks,image_dir,rgb_file,iter)
+        #uncomment save_mask_images if wish to write segmented image
+        #save_mask_images(rgb_image,depth_masks,image_dir,rgb_file,iter)
 
         # next process depth_masks for creating otcomaps
 
