@@ -3,9 +3,9 @@ Started by: Usman Zahidi (uz) {16/02/22}
 
 """
 #general imports
-import os, sys, numpy as np, cv2,pickle, logging
+import os, numpy as np, cv2,pickle, logging
 from enum                        import Enum,unique
-from skimage.transform           import resize
+from scipy                       import ndimage
 
 # detectron imports
 from detectron2.config           import get_cfg
@@ -13,13 +13,9 @@ from detectron2.engine.defaults  import DefaultPredictor
 from detectron2                  import model_zoo
 
 # project imports
-from fastpick_visualizer         import FastPickVisualizer,ColorMode
-
+from .fastpick_visualizer        import FastPickVisualizer,ColorMode
 
 logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
-
-
-from scipy import ndimage
 
 
 class MasksPredictor:
@@ -71,7 +67,7 @@ class MasksPredictor:
         rgb_image=rgbd_image[:, :, :3]
 
         outputs = self.predictor(rgb_image)
-        # format is documented at https://detectron2.readthedocs.io/tutorials/models.html#model-output-format
+        # [16/02/22]:format is documented at https://detectron2.readthedocs.io/tutorials/models.html#model-output-format
         v = FastPickVisualizer(rgb_image,
                        metadata=self.metadata,
                        scale=self.scale,
