@@ -11,7 +11,7 @@ NUM_CLASSES = 3 #1.strawberry, 2. canopy, 3. rigid
 
 def call_predictor():
 
-    model_file  = './model/fp_ss_model.pth'
+    model_file  = './model/fp_model.pth'
     config_file = 'COCO-InstanceSegmentation/mask_rcnn_R_101_FPN_3x.yaml'
     metadata_file ='./data/metadata.pkl'
     image_dir   ='./images/rgb/'
