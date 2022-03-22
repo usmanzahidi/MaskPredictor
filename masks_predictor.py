@@ -3,9 +3,8 @@ Started by: Usman Zahidi (uz) {16/02/22}
 
 """
 #general imports
-import os, numpy as np, cv2,pickle, logging
+import os, numpy as np, pickle, logging
 from enum                        import Enum,unique
-from scipy                       import ndimage
 
 # detectron imports
 from detectron2.config           import get_cfg
@@ -13,7 +12,7 @@ from detectron2.engine.defaults  import DefaultPredictor
 from detectron2                  import model_zoo
 
 # project imports
-from visualizer.fastpick_visualizer   import FastPickVisualizer,ColorMode
+from .visualizer.fastpick_visualizer   import FastPickVisualizer,ColorMode
 
 #temp imports
 import matplotlib.pyplot as plt
