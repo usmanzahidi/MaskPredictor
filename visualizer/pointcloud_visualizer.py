@@ -45,7 +45,7 @@ class PointCloudVisualizer():
         conv_rgb_image = cv2.cvtColor(conv_rgb_image, cv2.COLOR_BGR2RGB)
 
         conv_rgb_image = np.ascontiguousarray(conv_rgb_image)
-        conv_depth_map = np.ascontiguousarray(conv_depth_map.astype(np.int16))
+        conv_depth_map = np.ascontiguousarray(conv_depth_map.astype(np.int16)) #depth map is 16 bit
 
         #create open3D images from opencv
         conv_rgb_image = o3d.geometry.Image(conv_rgb_image)
@@ -60,8 +60,9 @@ class PointCloudVisualizer():
 
         # uz: Flip it, pointcloud otherwise upside down
         pcd.transform([[1, 0, 0, 0], [0, -1, 0, 0], [0, 0, -1, 0], [0, 0, 0, 1]])
-        #uz: hardcoded values should be taken from param once supplied, for Test cameras
-        o3d.visualization.draw(pcd,title='Fastpick 3D Viewer',
+        #uz: hardcoded values should be taken from param once supplied (for our test cameras).
+        window_title='Fastpick 3D Viewer : Class [' + class_name.name + ']'
+        o3d.visualization.draw(pcd,title= window_title,
                                field_of_view=60.0,
                                bg_color=(0.2, 0.2, 0.2, 1.0),
                                lookat=[2.6172, 2.0475, 1.532],

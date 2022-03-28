@@ -6,20 +6,20 @@ class ClassNames(Enum):
     Enum of different class names
     """
 
-    STRAWBERRY   = 0,
+    STRAWBERRY   = 0
     """
     Class strawberry, depicted by yellow colour
     """
-    CANOPY       = 1,
+    CANOPY       = 1
     """
     Class canopy, depicted by green colour
     """
-    RIGID_STRUCT = 2,
+    RIGID_STRUCT = 2
     """
     Class rigid structure, depicted by red colour
     """
 
-    BACKGROUND   = 3,
+    BACKGROUND   = 3
     """
     Class background, depicted by blue colour
     """
