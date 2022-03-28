@@ -7,7 +7,7 @@ import sys, numpy as np, cv2,logging
 from masks_predictor import MasksPredictor, ClassNames, OutputType
 from os import listdir
 
-NUM_CLASSES = 3 #1.strawberry, 2. canopy, 3. rigid
+NUM_CLASSES = 3 #1.strawberry, 2. canopy, 3. rigid (model finds three classes, leftover is then labelled as background)
 
 def call_predictor():
 
@@ -26,47 +26,56 @@ def call_predictor():
 
     #loop for generating/saving segmentation output images
     for rgb_file,depth_file in zip(rgb_files,depth_files):
-        #print(image_dir + rgb_file)
         rgb_image   = cv2.imread(image_dir+rgb_file)
-        depth_image = cv2.imread(depth_dir+depth_file)
+        depth_image = cv2.imread(depth_dir + depth_file, cv2.IMREAD_UNCHANGED)  #cv2.IMREAD_UNCHANGED to keep uint16 type
 
         if rgb_image is None or depth_image is None:
             message = 'path to rgb or depth image is invalid'
             logging.error(message)
 
-
-        if rgb_image.shape != depth_image.shape:
+        # check for h,w match of rgb and depth
+        if rgb_image.shape[:2] != depth_image.shape:
             message = 'rgb and depth image size mismatch'
             logging.error(message)
 
 
-        rgbd_image  = np.dstack((rgb_image,depth_image[:,:,0]))
+        rgbd_image  = np.dstack((rgb_image.astype(np.uint16),depth_image))
 
         # list of classes for which depth masks are required, shouldn't be null, returns in the order supplied
-        class_list  = [ClassNames.STRAWBERRY,ClassNames.CANOPY,ClassNames.RIGID_STRUCT,ClassNames.BACKGROUND]
+        depth_class_list  = [ClassNames.STRAWBERRY,ClassNames.CANOPY,ClassNames.RIGID_STRUCT,ClassNames.BACKGROUND]
+
+        #display_class works only with OutputType.POINTCLOUD_DISPLAY type
+        display_class = ClassNames.ALL  # ClassNames.ALL shows all classes in point cloud, change class as required
 
         # ** main call **
         try:
-            output_masks = mask_pred.get_predictions(rgbd_image,class_list,OutputType.DEPTH_MASKS)
+            depth_masks, rgb_masks = mask_pred.get_predictions(rgbd_image,depth_class_list,OutputType.DEPTH_MASKS,
+                                                               display_class)
+
         except Exception as e:
             logging.error(e)
+            print(e)
             sys.exit(1)
 
 
         # next: process depth_masks for creating otcomaps
 
         #save_mask_images writes segmented image in output dir
-        save_mask_images(rgb_image,output_masks,output_dir,iter)
+        #save_mask_images(rgb_image,depth_masks,output_dir,iter)
 
 
         iter += 1
 
+#normalize data, required for saving mask images
+def nor(data):
+    return (data - np.min(data)) / (np.max(data) - np.min(data))
+
 def save_mask_images(rgb_image,depth_masks,output_dir,iter):
 
-    yellow= depth_masks[:, :, 0].copy()
-    green = depth_masks[:, :, 1].copy()
-    red   = depth_masks[:, :, 2].copy()
-    blue = depth_masks[:, :, 3].copy()
+    yellow= nor(depth_masks[:, :, 0].copy())*255
+    green = nor(depth_masks[:, :, 1].copy())*255
+    red   = nor(depth_masks[:, :, 2].copy())*255
+    blue  = nor(depth_masks[:, :, 3].copy())*255
 
     bgr_image = depth_masks[:, :, 0:3].copy()
     bgr_image[:, :, 0] = blue
