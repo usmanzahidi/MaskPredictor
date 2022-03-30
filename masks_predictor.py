@@ -11,9 +11,14 @@ from detectron2.engine.defaults  import DefaultPredictor
 from detectron2                  import model_zoo
 
 # project imports
-from visualizer.fastpick_visualizer   import FastPickVisualizer,ColorMode
-from visualizer.mask_predictor_enums import ClassNames,OutputType
-from visualizer.pointcloud_visualizer import PointCloudVisualizer
+try:
+    from visualizer.fastpick_visualizer   import FastPickVisualizer,ColorMode
+    from visualizer.mask_predictor_enums import ClassNames,OutputType
+    from visualizer.pointcloud_visualizer import PointCloudVisualizer
+except:
+    from .visualizer.fastpick_visualizer   import FastPickVisualizer,ColorMode
+    from .visualizer.mask_predictor_enums import ClassNames,OutputType
+    from .visualizer.pointcloud_visualizer import PointCloudVisualizer
 
 
 
