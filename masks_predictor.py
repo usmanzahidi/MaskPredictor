@@ -97,11 +97,15 @@ class MasksPredictor:
 
         if output_type==OutputType.POINTCLOUD_DISPLAY:
             pc_visualizer = PointCloudVisualizer(rgb_masks, depth_masks)
-            pc_visualizer.visualize_pcl_mask(display_class,depth_image,rgb_image)
+            pc_visualizer.visualize_pcl_mask(display_class,depth_image,self.np_to_py_list(rgb_image))
             sys.exit(0)
         else:
             return depth_masks,rgb_masks
 
+    def np_to_py_list( self, np_arrays ):
+        # receives a list of numpy arrays and converts each ndarray to a python (nested) list
+        return [ a.tolist() for a in np_arrays ]
+        
     def get_background(self,depth_image):
 
         depth_zero = (depth_image == 0)*1
@@ -143,18 +147,18 @@ class MasksPredictor:
         for classes in class_list:
             if   classes==ClassNames.STRAWBERRY:
                 depth_masks.append(yellow*depth_image)
-                a=(1 * np.dstack([yellow, yellow, yellow]) * rgb_image).tolist()
+                a=(1 * np.dstack([yellow, yellow, yellow]) * rgb_image)
                 rgb_masks.append(a)
             elif classes == ClassNames.CANOPY:
                 depth_masks.append(green*depth_image)
-                rgb_masks.append((1*np.dstack([green, green, green])*rgb_image).tolist())
+                rgb_masks.append((1*np.dstack([green, green, green])*rgb_image))
             elif classes == ClassNames.RIGID_STRUCT:
                 depth_masks.append(red*depth_image)
-                rgb_masks.append((1*np.dstack([red, red, red])*rgb_image).tolist())
+                rgb_masks.append((1*np.dstack([red, red, red])*rgb_image))
             elif classes == ClassNames.BACKGROUND:
                 depth_masks.append(blue*depth_image)
-                rgb_masks.append((1*np.dstack([blue, blue, blue])*rgb_image).tolist())
+                rgb_masks.append((1*np.dstack([blue, blue, blue])*rgb_image))
             elif classes == ClassNames.ALL:
                 depth_masks.append(depth_image)
-                rgb_masks.append((rgb_image).tolist())
+                rgb_masks.append((rgb_image))
         return np.dstack(depth_masks),rgb_masks
